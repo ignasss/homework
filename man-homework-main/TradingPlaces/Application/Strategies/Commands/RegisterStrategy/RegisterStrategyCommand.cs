@@ -1,6 +1,9 @@
-﻿namespace Models.Strategy
+﻿using Application.Abstractions.Command;
+using Models.Strategy;
+
+namespace Application.Strategies.Commands.RegisterStrategy
 {
-    public class Strategy
+    public class RegisterStrategyCommand : ICommand
     {
         public string Ticker { get; set; }
         public Instruction Instruction { get; set; }

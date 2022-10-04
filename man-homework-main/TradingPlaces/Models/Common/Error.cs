@@ -1,6 +1,6 @@
 ﻿namespace Models.Common
 {
-    public class Error
+    public sealed class Error
     {
         public string Code { get; }
         
@@ -11,5 +11,7 @@
             Code = code;
             Message = message;
         }
+
+        public static Error None => new Error(string.Empty, string.Empty);
     }
 }
