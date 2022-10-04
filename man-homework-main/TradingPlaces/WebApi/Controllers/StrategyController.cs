@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Application.Strategies.Commands.RegisterStrategy;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -13,19 +17,25 @@ namespace TradingPlaces.WebApi.Controllers
     {
         private readonly IHostedServiceAccessor<IStrategyManagementService> _strategyManagementService;
         private readonly ILogger<StrategyController> _logger;
+        private readonly ISender _sender;
 
-        public StrategyController(IHostedServiceAccessor<IStrategyManagementService> strategyManagementService, ILogger<StrategyController> logger)
+        public StrategyController(
+            IHostedServiceAccessor<IStrategyManagementService> strategyManagementService,
+            ILogger<StrategyController> logger,
+            ISender sender)
         {
             _strategyManagementService = strategyManagementService;
             _logger = logger;
+            _sender = sender;
         }
 
         [HttpPost]
         [SwaggerOperation(nameof(RegisterStrategy))]
         [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(string))]
-        public IActionResult RegisterStrategy(StrategyDetailsDto strategyDetails)
+        public async Task<IActionResult> RegisterStrategy(StrategyDetailsDto strategyDetails, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var result = await _sender.Send(new RegisterStrategyCommand(), cancellationToken);
+            return Ok();
         }
 
         [HttpDelete("{id}")]
