@@ -3,11 +3,22 @@ using Models.Strategy;
 
 namespace Application.Strategies.Commands.RegisterStrategy
 {
-    public class RegisterStrategyCommand : ICommand
+    public sealed class RegisterStrategyCommand : ICommand
     {
-        public string Ticker { get; set; }
-        public Instruction Instruction { get; set; }
-        public decimal PriceMovement { get; set; }
-        public int Quantity { get; set; }
+        public string Ticker { get; }
+
+        public Instruction Instruction { get; }
+
+        public decimal PriceMovement { get; }
+
+        public int Quantity { get; }
+
+        public RegisterStrategyCommand(string ticker, Instruction instruction, decimal priceMovement, int quantity)
+        {
+            Ticker = ticker;
+            Instruction = instruction;
+            PriceMovement = priceMovement;
+            Quantity = quantity;
+        }
     }
 }

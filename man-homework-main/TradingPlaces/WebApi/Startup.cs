@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -8,12 +7,12 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Persistence.Abstractions;
+using Persistence.Database;
 using Persistence.Repositories;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 using TradingPlaces.WebApi.Filters;
-using TradingPlaces.WebApi.Maps;
 using TradingPlaces.WebApi.Services;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
@@ -36,10 +35,10 @@ namespace TradingPlaces.WebApi
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 });
 
-            services.AddAutoMapper(typeof(StrategyProfile));
             services.AddHostedService<StrategyManagementService>();
             services.AddSingleton<IHostedServiceAccessor<IStrategyManagementService>, HostedServiceAccessor<IStrategyManagementService>>();
             services.AddTransient<IStrategiesRepository, StrategiesRepository>();
+            services.AddSingleton<IDatabase, Database>();
             services.AddMediatR(Application.AssemblyReference.Assembly);
         }
 
