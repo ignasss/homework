@@ -10,9 +10,9 @@ namespace Persistence.Database
     {
         private readonly Dictionary<string, Strategy> _database;
 
-        public Database(Dictionary<string, Strategy> database)
+        public Database()
         {
-            _database = database;
+            _database = new Dictionary<string, Strategy>();
         }
 
         public async Task<Strategy> Save(Strategy strategy)
@@ -25,6 +25,14 @@ namespace Persistence.Database
             }
 
             throw new InvalidOperationException("Couldn't save strategy to database");
+        }
+
+        public async Task Remove(string id)
+        {
+            if (!_database.Remove(id))
+            {
+                throw new InvalidOperationException("Strategy.NotFound");
+            }
         }
     }
 }

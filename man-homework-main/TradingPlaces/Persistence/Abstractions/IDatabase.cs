@@ -6,5 +6,6 @@ namespace Persistence.Abstractions
     public interface IDatabase
     {
         Task<Strategy> Save(Strategy strategy);
+        Task Remove(string id);
     }
 }

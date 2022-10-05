@@ -8,5 +8,6 @@ namespace Persistence.Abstractions
     {
         Task<Strategy[]> GetAll();
         Task<Strategy> Save(StrategyDetails strategyDetails);
+        Task Remove(string id);
     }
 }

@@ -55,5 +55,22 @@ namespace Persistence.Repositories
                 throw;
             }
         }
+
+        public async Task Remove(string id)
+        {
+            try
+            {
+                await _database.Remove(id);
+            }
+            catch (InvalidOperationException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
     }
 }

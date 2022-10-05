@@ -1,7 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Strategies.Commands.RegisterStrategy;
-using Models.Common;
 using Models.Strategy;
 using Moq;
 using NUnit.Framework;
@@ -36,7 +35,7 @@ namespace ApplicationUnitTests
             var result = await _handler.Handle(command, new CancellationToken());
 
             //Assert
-            AssertFailure(result);
+            CommonAsserts.AssertFailure(result);
         }
 
         [Test]
@@ -49,7 +48,7 @@ namespace ApplicationUnitTests
             var result = await _handler.Handle(command, new CancellationToken());
 
             //Assert
-            AssertFailure(result);
+            CommonAsserts.AssertFailure(result);
         }
 
         [Test]
@@ -64,7 +63,7 @@ namespace ApplicationUnitTests
             var result = await _handler.Handle(command, new CancellationToken());
 
             //Assert
-            AssertFailure(result);
+            CommonAsserts.AssertFailure(result);
         }
 
         [Test]
@@ -77,18 +76,7 @@ namespace ApplicationUnitTests
             var result = await _handler.Handle(command, new CancellationToken());
 
             //Assert
-            Assert.IsTrue(result.IsSuccess);
-            Assert.IsNotNull(result.Error);
-            Assert.IsEmpty(result.Error.Code);
-            Assert.IsEmpty(result.Error.Message);
-        }
-
-        private static void AssertFailure(Result result)
-        {
-            Assert.IsTrue(result.IsFailure);
-            Assert.IsNotNull(result.Error);
-            Assert.IsNotEmpty(result.Error.Code);
-            Assert.IsNotEmpty(result.Error.Message);
+            CommonAsserts.AssertSuccess(result);
         }
     }
 }

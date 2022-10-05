@@ -37,8 +37,8 @@ namespace TradingPlaces.WebApi
 
             services.AddHostedService<StrategyManagementService>();
             services.AddSingleton<IHostedServiceAccessor<IStrategyManagementService>, HostedServiceAccessor<IStrategyManagementService>>();
-            services.AddTransient<IStrategiesRepository, StrategiesRepository>();
             services.AddSingleton<IDatabase, Database>();
+            services.AddTransient<IStrategiesRepository, StrategiesRepository>();
             services.AddMediatR(Application.AssemblyReference.Assembly);
         }
 
