@@ -17,13 +17,7 @@ namespace Persistence.Repositories
 
         public async Task<Strategy[]> GetAll()
         {
-            return new Strategy[] { new Strategy
-            {
-                Instruction = Instruction.Sell,
-                Quantity = 1,
-                Ticker = "Test",
-                PriceMovement = new decimal(10.0)
-            }};
+            return await _database.GetAll();
         }
 
         public async Task<Strategy> Save(StrategyDetails strategyDetails)
@@ -40,7 +34,8 @@ namespace Persistence.Repositories
                     Ticker = strategyDetails.Ticker,
                     Instruction = strategyDetails.Instruction,
                     PriceMovement = strategyDetails.PriceMovement,
-                    Quantity = strategyDetails.Quantity
+                    Quantity = strategyDetails.Quantity,
+                    ExecutionPrice = strategyDetails.ExecutionPrice
                 };
                 var result = await _database.Save(strategy);
                 return result;

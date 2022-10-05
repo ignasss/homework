@@ -9,6 +9,7 @@ using Newtonsoft.Json.Serialization;
 using Persistence.Abstractions;
 using Persistence.Database;
 using Persistence.Repositories;
+using Reutberg;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
@@ -39,6 +40,7 @@ namespace TradingPlaces.WebApi
             services.AddSingleton<IHostedServiceAccessor<IStrategyManagementService>, HostedServiceAccessor<IStrategyManagementService>>();
             services.AddSingleton<IDatabase, Database>();
             services.AddTransient<IStrategiesRepository, StrategiesRepository>();
+            services.AddTransient<IReutbergService, ReutbergService>();
             services.AddMediatR(Application.AssemblyReference.Assembly);
         }
 

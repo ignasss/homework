@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using Persistence.Abstractions;
 using Persistence.Entities;
@@ -8,11 +9,16 @@ namespace Persistence.Database
 {
     public class Database : IDatabase
     {
-        private readonly Dictionary<string, Strategy> _database;
+        private readonly ConcurrentDictionary<string, Strategy> _database;
 
         public Database()
         {
-            _database = new Dictionary<string, Strategy>();
+            _database = new ConcurrentDictionary<string, Strategy>();
+        }
+
+        public async Task<Strategy[]> GetAll()
+        {
+            return await Task.FromResult(_database.Select(d => d.Value).ToArray());
         }
 
         public async Task<Strategy> Save(Strategy strategy)
@@ -27,12 +33,14 @@ namespace Persistence.Database
             throw new InvalidOperationException("Couldn't save strategy to database");
         }
 
-        public async Task Remove(string id)
+        public Task Remove(string id)
         {
-            if (!_database.Remove(id))
+            if (!_database.TryRemove(id, out var strategy))
             {
                 throw new InvalidOperationException("Strategy.NotFound");
             }
+
+            return Task.CompletedTask;
         }
     }
 }

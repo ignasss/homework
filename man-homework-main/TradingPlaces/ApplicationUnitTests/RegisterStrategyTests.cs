@@ -5,18 +5,33 @@ using Models.Strategy;
 using Moq;
 using NUnit.Framework;
 using Persistence.Abstractions;
+using Persistence.Entities;
+using Reutberg;
 
 namespace ApplicationUnitTests
 {
     public class RegisterStrategyTests
     {
         private RegisterStrategyCommandHandler _handler;
+        private const decimal Price = 100;
 
         [SetUp]
         public void Setup()
         {
             var strategiesRepositoryMock = new Mock<IStrategiesRepository>();
-            _handler = new RegisterStrategyCommandHandler(strategiesRepositoryMock.Object);
+            strategiesRepositoryMock.Setup(r => r.Save(It.IsAny<StrategyDetails>())).ReturnsAsync((StrategyDetails s) => new Strategy
+            {
+                Ticker = s.Ticker,
+                Instruction = s.Instruction,
+                PriceMovement = s.PriceMovement,
+                Quantity = s.Quantity,
+                ExecutionPrice = s.ExecutionPrice
+            });
+
+            var reutbergServiceMock = new Mock<IReutbergService>();
+            reutbergServiceMock.Setup(r => r.GetQuote(It.IsAny<string>())).Returns(() => Price);
+
+            _handler = new RegisterStrategyCommandHandler(strategiesRepositoryMock.Object, reutbergServiceMock.Object);
         }
 
         [Test]
@@ -77,6 +92,22 @@ namespace ApplicationUnitTests
 
             //Assert
             CommonAsserts.AssertSuccess(result);
+        }
+
+        [Test]
+        [TestCase(10, 110)]
+        [TestCase(-10, 90)]
+        public async Task GivenPriceMovement_WhenRegisteringStrategy_ThenExecutionPriceGetsCalculatedCorrectly(decimal priceMovement, decimal executionPrice)
+        {
+            //Arrange
+            var command = new RegisterStrategyCommand("MSFT", Instruction.Buy, priceMovement, 10);
+
+            //Act
+            var result = await _handler.Handle(command, new CancellationToken());
+
+            //Assert
+            CommonAsserts.AssertSuccess(result);
+            Assert.AreEqual(executionPrice, result.Value.ExecutionPrice);
         }
     }
 }

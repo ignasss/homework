@@ -16,4 +16,10 @@
       <ProjectReference Include="..\Persistence\Persistence.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Reutberg">
+        <HintPath>..\Resources\Reutberg.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

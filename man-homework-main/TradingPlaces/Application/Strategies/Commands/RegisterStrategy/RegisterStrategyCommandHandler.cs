@@ -6,50 +6,74 @@ using Application.Abstractions.Command;
 using Models.Common;
 using Models.Strategy;
 using Persistence.Abstractions;
+using Reutberg;
 
 namespace Application.Strategies.Commands.RegisterStrategy
 {
-    public sealed class RegisterStrategyCommandHandler : ICommandHandler<RegisterStrategyCommand>
+    public sealed class RegisterStrategyCommandHandler : ICommandHandler<RegisterStrategyCommand, StrategyDetails>
     {
         private const int MinTickerLength = 3;
         private const int MaxTickerLength = 5;
         private const decimal Zero = 0;
         private readonly IStrategiesRepository _strategiesRepository;
+        private readonly IReutbergService _reutbergService;
 
-        public RegisterStrategyCommandHandler(IStrategiesRepository strategiesRepository)
+        public RegisterStrategyCommandHandler(IStrategiesRepository strategiesRepository, IReutbergService reutbergService)
         {
             _strategiesRepository = strategiesRepository;
+            _reutbergService = reutbergService;
         }
 
-        public async Task<Result> Handle(RegisterStrategyCommand command, CancellationToken cancellationToken)
+        public async Task<Result<StrategyDetails>> Handle(RegisterStrategyCommand command, CancellationToken cancellationToken)
         {
             if (TickerNotValid(command.Ticker))
             {
-                return new Result(
+                return new Result<StrategyDetails>(
+                    default,
                     false,
                     new Error("Strategy.InvalidTicker", "Ticker identifier is an uppercase alphanumeric string of length 3 to 5 inclusive"));
             }
 
             if (command.PriceMovement == Zero)
             {
-                return new Result(false, new Error("Strategy.InvalidPriceMovement", "Please specify price movement"));
+                return new Result<StrategyDetails>(default, false, new Error("Strategy.InvalidPriceMovement", "Please specify price movement"));
             }
 
             if (command.Quantity <= Zero)
             {
-                return new Result(false, new Error("Strategy.InvalidQuantity", "Quantity must be higher than 0"));
+                return new Result<StrategyDetails>(default, false, new Error("Strategy.InvalidQuantity", "Quantity must be higher than 0"));
+            }
+
+            var strategyDetails = new StrategyDetails
+            {
+                Ticker = command.Ticker,
+                Instruction = command.Instruction,
+                PriceMovement = command.PriceMovement,
+                Quantity = command.Quantity
+            };
+            var currentPrice = _reutbergService.GetQuote(command.Ticker);
+            var priceDifference = Math.Abs(command.PriceMovement) / 100 * currentPrice;
+            if (command.PriceMovement < 0)
+            {
+                strategyDetails.ExecutionPrice = currentPrice - priceDifference;
+            }
+            else
+            {
+                strategyDetails.ExecutionPrice = currentPrice + priceDifference;
             }
 
             try
             {
-                var strategyDetails = new StrategyDetails
+                var strategy = await _strategiesRepository.Save(strategyDetails);
+                var savedStrategyDetails = new StrategyDetails
                 {
-                    Ticker = command.Ticker,
-                    Instruction = command.Instruction,
-                    PriceMovement = command.PriceMovement,
-                    Quantity = command.Quantity
+                    Ticker = strategy.Ticker,
+                    Instruction = strategy.Instruction,
+                    PriceMovement = strategy.PriceMovement,
+                    Quantity = strategy.Quantity,
+                    ExecutionPrice = strategy.ExecutionPrice
                 };
-                await _strategiesRepository.Save(strategyDetails);
+                return new Result<StrategyDetails>(savedStrategyDetails, true, Error.None);
             }
             catch (ArgumentNullException e)
             {
@@ -60,8 +84,6 @@ namespace Application.Strategies.Commands.RegisterStrategy
                 Console.WriteLine(e);
                 throw;
             }
-
-            return new Result(true, Error.None);
         }
 
         private static bool TickerNotValid(string ticker)

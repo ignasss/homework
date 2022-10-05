@@ -19,4 +19,10 @@
       <ProjectReference Include="..\Application\Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Reutberg">
+        <HintPath>..\Resources\Reutberg.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

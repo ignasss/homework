@@ -3,7 +3,7 @@ using Models.Strategy;
 
 namespace Application.Strategies.Commands.RegisterStrategy
 {
-    public sealed class RegisterStrategyCommand : ICommand
+    public sealed class RegisterStrategyCommand : ICommand<StrategyDetails>
     {
         public string Ticker { get; }
 
