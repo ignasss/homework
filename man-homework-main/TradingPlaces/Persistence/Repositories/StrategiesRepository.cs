@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Models.Strategy;
 using Persistence.Abstractions;
 using Persistence.Entities;
@@ -9,10 +10,12 @@ namespace Persistence.Repositories
     public class StrategiesRepository : IStrategiesRepository
     {
         private readonly IDatabase _database;
+        private readonly ILogger<StrategiesRepository> _logger;
 
-        public StrategiesRepository(IDatabase database)
+        public StrategiesRepository(IDatabase database, ILogger<StrategiesRepository> logger)
         {
             _database = database;
+            _logger = logger;
         }
 
         public async Task<Strategy[]> GetAll()
@@ -24,6 +27,7 @@ namespace Persistence.Repositories
         {
             if (strategyDetails == null)
             {
+                _logger.LogInformation("Failed to save strategy StrategyDetails is null");
                 throw new ArgumentNullException(nameof(strategyDetails));
             }
 
@@ -38,15 +42,17 @@ namespace Persistence.Repositories
                     ExecutionPrice = strategyDetails.ExecutionPrice
                 };
                 var result = await _database.Save(strategy);
+                _logger.LogInformation("Successfully saved strategy to database, id: {Id}", strategy.Id);
                 return result;
             }
             catch (InvalidOperationException e)
             {
+                _logger.LogError(e, "Failed to save strategy");
                 throw;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                _logger.LogError(e, "Failed to save strategy");
                 throw;
             }
         }
@@ -56,14 +62,16 @@ namespace Persistence.Repositories
             try
             {
                 await _database.Remove(id);
+                _logger.LogInformation("Successfully removed strategy from database, id: {Id}", id);
             }
             catch (InvalidOperationException e)
             {
+                _logger.LogError(e, "Failed to remove strategy");
                 throw;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                _logger.LogError(e, "Failed to remove strategy");
                 throw;
             }
         }

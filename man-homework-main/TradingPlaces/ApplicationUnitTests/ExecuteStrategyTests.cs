@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Strategies.Commands.ExecuteStrategy;
+using Microsoft.Extensions.Logging;
 using Models.Strategy;
 using Moq;
 using NUnit.Framework;
@@ -19,6 +20,7 @@ namespace ApplicationUnitTests
         public void SetUp()
         {
             var strategiesRepositoryMock = new Mock<IStrategiesRepository>();
+
             var reutbergServiceMock = new Mock<IReutbergService>();
             reutbergServiceMock.Setup(r => r.GetQuote("MSFT")).Returns(() => 110);
             reutbergServiceMock.Setup(r => r.GetQuote("GOOGL")).Returns(() => 110);
@@ -29,7 +31,9 @@ namespace ApplicationUnitTests
             reutbergServiceMock.Setup(r => r.Buy("GOOGL", 100)).Throws(() => new TradeException("GOOGL"));
             reutbergServiceMock.Setup(r => r.Sell("GOOGL", 100)).Throws(() => new TradeException("GOOGL"));
 
-            _handler = new ExecuteStrategyCommandHandler(reutbergServiceMock.Object, strategiesRepositoryMock.Object);
+            var loggerMock = new Mock<ILogger<ExecuteStrategyCommandHandler>>();
+
+            _handler = new ExecuteStrategyCommandHandler(reutbergServiceMock.Object, strategiesRepositoryMock.Object, loggerMock.Object);
         }
 
         [Test]

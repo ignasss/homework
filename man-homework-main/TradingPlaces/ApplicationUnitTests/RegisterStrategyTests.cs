@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Strategies.Commands.RegisterStrategy;
+using Microsoft.Extensions.Logging;
 using Models.Strategy;
 using Moq;
 using NUnit.Framework;
@@ -32,7 +33,9 @@ namespace ApplicationUnitTests
             reutbergServiceMock.Setup(r => r.GetQuote("MSFT")).Returns(() => Price);
             reutbergServiceMock.Setup(r => r.GetQuote("GOOGL")).Throws(() => new QuoteException("GOOGL"));
 
-            _handler = new RegisterStrategyCommandHandler(strategiesRepositoryMock.Object, reutbergServiceMock.Object);
+            var loggerMock = new Mock<ILogger<RegisterStrategyCommandHandler>>();
+
+            _handler = new RegisterStrategyCommandHandler(strategiesRepositoryMock.Object, reutbergServiceMock.Object, loggerMock.Object);
         }
 
         [Test]

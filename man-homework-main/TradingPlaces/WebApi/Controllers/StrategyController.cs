@@ -37,12 +37,17 @@ namespace TradingPlaces.WebApi.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad request", typeof(string))]
         public async Task<IActionResult> RegisterStrategy(StrategyDetailsDto strategyDetails, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Started processing register strategy request");
+
             var command = new RegisterStrategyCommand(
                 strategyDetails.Ticker,
                 (Instruction)strategyDetails.Instruction,
                 strategyDetails.PriceMovement,
                 strategyDetails.Quantity);
             var result = await _sender.Send(command, cancellationToken);
+
+            _logger.LogInformation($"Finished processing register strategy request. IsSuccess: {result.IsSuccess}");
+
             return result.IsSuccess ? (ActionResult)Ok() : BadRequest(result.Error);
         }
 
@@ -53,12 +58,17 @@ namespace TradingPlaces.WebApi.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad request", typeof(string))]
         public async Task<IActionResult> UnregisterStrategy(string id, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Started processing unregister strategy request");
+
             var result = await _sender.Send(new UnregisterStrategyCommand(id), cancellationToken);
             if (result.IsFailure)
             {
+                _logger.LogInformation($"Finished processing register strategy request. IsSuccess: {result.IsSuccess}");
+
                 return result.Error.Code == NotFoundErrorCode ? (ActionResult)NotFound(id) : BadRequest(result.Error);
             }
 
+            _logger.LogInformation($"Finished processing register strategy request. IsSuccess: {result.IsSuccess}");
             return Ok();
         }
     }

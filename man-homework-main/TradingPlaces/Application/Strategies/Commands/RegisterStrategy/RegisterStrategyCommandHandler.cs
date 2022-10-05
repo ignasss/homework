@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Abstractions.Command;
+using Microsoft.Extensions.Logging;
 using Models.Common;
 using Models.Strategy;
 using Persistence.Abstractions;
@@ -17,17 +18,20 @@ namespace Application.Strategies.Commands.RegisterStrategy
         private const decimal Zero = 0;
         private readonly IStrategiesRepository _strategiesRepository;
         private readonly IReutbergService _reutbergService;
+        private readonly ILogger<RegisterStrategyCommandHandler> _logger;
 
-        public RegisterStrategyCommandHandler(IStrategiesRepository strategiesRepository, IReutbergService reutbergService)
+        public RegisterStrategyCommandHandler(IStrategiesRepository strategiesRepository, IReutbergService reutbergService, ILogger<RegisterStrategyCommandHandler> logger)
         {
             _strategiesRepository = strategiesRepository;
             _reutbergService = reutbergService;
+            _logger = logger;
         }
 
         public async Task<Result<StrategyDetails>> Handle(RegisterStrategyCommand command, CancellationToken cancellationToken)
         {
             if (TickerNotValid(command.Ticker))
             {
+                _logger.LogInformation("Ticker identifier invalid, identifier: {Identifier}", command.Ticker);
                 return new Result<StrategyDetails>(
                     default,
                     false,
@@ -36,11 +40,13 @@ namespace Application.Strategies.Commands.RegisterStrategy
 
             if (command.PriceMovement == Zero)
             {
+                _logger.LogInformation("Prive movement invalid, priceMovement: {PriceMovement}", command.PriceMovement);
                 return new Result<StrategyDetails>(default, false, new Error("Strategy.InvalidPriceMovement", "Please specify price movement"));
             }
 
             if (command.Quantity <= Zero)
             {
+                _logger.LogInformation("Quantity invalid, quantity: {Quantity}", command.Quantity);
                 return new Result<StrategyDetails>(default, false, new Error("Strategy.InvalidQuantity", "Quantity must be higher than 0"));
             }
 
@@ -58,11 +64,12 @@ namespace Application.Strategies.Commands.RegisterStrategy
             }
             catch (QuoteException e)
             {
+                _logger.LogError(e, "Failed to fetch quote");
                 return new Result<StrategyDetails>(default, false, new Error("Strategy.QuoteQueryFailed", $"Failed to retrieve quote, QuoteException: {e}"));
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                _logger.LogError(e, "Failed to fetch quote");
                 throw;
             }
 
@@ -91,11 +98,12 @@ namespace Application.Strategies.Commands.RegisterStrategy
             }
             catch (ArgumentNullException e)
             {
+                _logger.LogError(e, "Failed to save strategy");
                 throw;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                _logger.LogError(e, "Failed to save strategy");
                 throw;
             }
         }
