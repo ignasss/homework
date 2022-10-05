@@ -21,7 +21,7 @@ namespace ApplicationUnitTests
             _notExistingStrategyId = Guid.NewGuid().ToString();
             _existingStrategyId = Guid.NewGuid().ToString();
             var strategiesRepositoryMock = new Mock<IStrategiesRepository>();
-            strategiesRepositoryMock.Setup(r => r.Remove(_notExistingStrategyId)).Throws(new InvalidOperationException("Strategy.NotFound"));
+            strategiesRepositoryMock.Setup(r => r.Remove(_notExistingStrategyId)).Throws(() => new InvalidOperationException("Strategy.NotFound"));
             strategiesRepositoryMock.Setup(r => r.Remove(_existingStrategyId));
             _handler = new UnregisterStrategyCommandHandler(strategiesRepositoryMock.Object);
         }

@@ -29,7 +29,8 @@ namespace ApplicationUnitTests
             });
 
             var reutbergServiceMock = new Mock<IReutbergService>();
-            reutbergServiceMock.Setup(r => r.GetQuote(It.IsAny<string>())).Returns(() => Price);
+            reutbergServiceMock.Setup(r => r.GetQuote("MSFT")).Returns(() => Price);
+            reutbergServiceMock.Setup(r => r.GetQuote("GOOGL")).Throws(() => new QuoteException("GOOGL"));
 
             _handler = new RegisterStrategyCommandHandler(strategiesRepositoryMock.Object, reutbergServiceMock.Object);
         }
@@ -108,6 +109,19 @@ namespace ApplicationUnitTests
             //Assert
             CommonAsserts.AssertSuccess(result);
             Assert.AreEqual(executionPrice, result.Value.ExecutionPrice);
+        }
+
+        [Test]
+        public async Task GivenStrategy_WhenQueryingCurrentPriceFails_ThenReturnsError()
+        {
+            //Arrange
+            var command = new RegisterStrategyCommand("GOOGL", Instruction.Buy, 10, 10);
+
+            //Act
+            var result = await _handler.Handle(command, new CancellationToken());
+
+            //Assert
+            CommonAsserts.AssertFailure(result);
         }
     }
 }

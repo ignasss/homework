@@ -51,7 +51,21 @@ namespace Application.Strategies.Commands.RegisterStrategy
                 PriceMovement = command.PriceMovement,
                 Quantity = command.Quantity
             };
-            var currentPrice = _reutbergService.GetQuote(command.Ticker);
+            decimal currentPrice;
+            try
+            {
+                currentPrice = _reutbergService.GetQuote(command.Ticker);
+            }
+            catch (QuoteException e)
+            {
+                return new Result<StrategyDetails>(default, false, new Error("Strategy.QuoteQueryFailed", $"Failed to retrieve quote, QuoteException: {e}"));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
             var priceDifference = Math.Abs(command.PriceMovement) / 100 * currentPrice;
             if (command.PriceMovement < 0)
             {
